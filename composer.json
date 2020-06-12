@@ -1,0 +1,30 @@
+{
+  "name": "dy7338/think_agent",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "xiaole",
+      "email": "491286281@qq.com"
+    }
+  ],
+  "require": {
+    "topthink/framework": "^6.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "dy7338\\think_agent\\": "src"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "dy7338\\think_agent\\Service"
+      ],
+      "config": {
+        "agent": "src/config/agent.php"
+      }
+    }
+  }
+}
