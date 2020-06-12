@@ -58,8 +58,8 @@ class Agent extends Command
             return;
         }
 
-        $this->serv = new \swoole_server('0.0.0.0', Config::get ('agent_port'));
-        $this->serv->set (Config::get ('agent_config'));
+        $this->serv = new \swoole_server('0.0.0.0', Config::get ('agent.agent_port'));
+        $this->serv->set (Config::get ('agent.agent_config'));
         $this->serv->on ('ManagerStart', [$this, 'onManagerStart']);
         $this->serv->on ('WorkerStart', [$this, 'onWorkerStart']);
         $this->serv->on ('WorkerError', [$this, 'onWorkerError']);
@@ -112,19 +112,19 @@ class Agent extends Command
 
         //注册信号
         Process::signal ();
-        if ($worker_id == (Config::get ('agent_config.worker_num') - 1)) {
+        if ($worker_id == (Config::get ('agent.agent_config.worker_num') - 1)) {
             //10秒钟发送一次信号给中心服，证明自己的存在
             $server->tick (10000, function () use ($server) {
                 $centerClient = new \swoole_client(SWOOLE_SOCK_TCP);
                 try {
-                    if ($centerClient->connect (Config::get ('center.host'), Config::get ('center.port'), 0.5)) {
+                    if ($centerClient->connect (Config::get ('agent.center.host'), Config::get ('agent.center.port'), 0.5)) {
                         $agentIp = "0.0.0.0";
                         foreach (swoole_get_local_ip () as $v) {
                             if (substr ($v, 0, 7) == '192.168' || substr ($v, 0, 5) == '10.10') {
                                 $agentIp = $v;
                             }
                         }
-                        $centerClient->send (json_encode (["call" => "heart beat", "params" => ['hostname' => gethostname (), 'ip' => $agentIp, 'port' => Config::get ('agent_port')]]) . "\r\n");
+                        $centerClient->send (json_encode (["call" => "heart beat", "params" => ['hostname' => gethostname (), 'ip' => $agentIp, 'port' => Config::get ('agent.agent_port')]]) . "\r\n");
                     } else {
                         Log::write ('connect heart beat center Client failed', 'error');
                     }
@@ -156,8 +156,8 @@ class Agent extends Command
      * @param                  $worker_id 是一个从0-$worker_num之间的数字，表示这个worker进程的ID,$worker_id和进程PID没有任何关系
      */
     public function onWorkerStop (\Swoole\Server $server, $worker_id) {
-        if (is_writable (Config::get ('agent_config.pid_file'))) {
-            return unlink (Config::get ('agent_config.pid_file'));
+        if (is_writable (Config::get ('agent.agent_config.pid_file'))) {
+            return unlink (Config::get ('agent.agent_config.pid_file'));
         }
         Log::write ("WorkerStop;worker进程终止: worker_id:" . $worker_id, 'info');
     }
@@ -219,8 +219,8 @@ class Agent extends Command
      */
     private function getPid () {
 
-        if (is_readable (Config::get ('agent_config.pid_file'))) {
-            $content = file_get_contents (Config::get ('agent_config.pid_file'));
+        if (is_readable (Config::get ('agent.agent_config.pid_file'))) {
+            $content = file_get_contents (Config::get ('agent.agent_config.pid_file'));
 
             return (int) $content;
         } else {
